@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COMMUTI — 로그인</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-logo">COMMUTI</div>
+
+    <!-- Tab: Login / Register -->
+    <div class="tabs login-tabs">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">로그인</button>
+      <button class="tab-btn" id="tab-register" onclick="switchTab('register')">가입</button>
+    </div>
+
+    <div id="login-error" class="login-error hidden"></div>
+
+    <!-- Login form -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="login-email" class="form-control" placeholder="example@email.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" id="login-password" class="form-control" placeholder="비밀번호" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%" id="login-btn">로그인</button>
+    </form>
+
+    <!-- Register form -->
+    <form id="register-form" onsubmit="handleRegister(event)" style="display:none">
+      <div class="form-group">
+        <label>초대코드 <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="reg-invite" class="form-control" placeholder="초대코드 입력" required
+               style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+        <div class="form-hint">가입에는 관리자 초대코드가 필요합니다.</div>
+      </div>
+      <div class="form-group">
+        <label>핸들 (아이디)</label>
+        <input type="text" id="reg-handle" class="form-control" placeholder="handle (영문/숫자/_만 허용)" required
+               pattern="[a-zA-Z0-9_]{2,30}" autocomplete="off"
+               oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')">
+        <div class="form-hint">2~30자, 영문·숫자·_만 사용 가능</div>
+      </div>
+      <div class="form-group">
+        <label>캐릭터 이름</label>
+        <input type="text" id="reg-name" class="form-control" placeholder="캐릭터 이름" required maxlength="50" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>이메일</label>
+        <input type="email" id="reg-email" class="form-control" placeholder="example@email.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" id="reg-password" class="form-control" placeholder="8자 이상" required minlength="8" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>비밀번호 확인</label>
+        <input type="password" id="reg-password2" class="form-control" placeholder="비밀번호 재입력" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%" id="register-btn">가입하기</button>
+    </form>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // ── Tab switch ────────────────────────────────────────────
+  function switchTab(tab) {
+    document.getElementById('login-form').style.display    = tab === 'login'    ? '' : 'none';
+    document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+    document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    setError('');
+  }
+
+  function setError(msg) {
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.classList.toggle('hidden', !msg);
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.textContent = loading ? '처리 중…' : (btnId === 'login-btn' ? '로그인' : '가입하기');
+  }
+
+  // ── Auth check on load ────────────────────────────────────
+  (async () => {
+    const { user } = await Auth.init();
+    if (user) window.location.href = 'app.html';
+  })();
+
+  // ── Login ─────────────────────────────────────────────────
+  async function handleLogin(e) {
+    e.preventDefault();
+    setError('');
+    setLoading('login-btn', true);
+    try {
+      await Auth.signIn({
+        email:    document.getElementById('login-email').value.trim(),
+        password: document.getElementById('login-password').value,
+      });
+      window.location.href = 'app.html';
+    } catch (err) {
+      setError(friendlyError(err.message));
+      setLoading('login-btn', false);
+    }
+  }
+
+  // ── Register ──────────────────────────────────────────────
+  async function handleRegister(e) {
+    e.preventDefault();
+    setError('');
+
+    const pw  = document.getElementById('reg-password').value;
+    const pw2 = document.getElementById('reg-password2').value;
+    if (pw !== pw2) { setError('비밀번호가 일치하지 않습니다.'); return; }
+
+    setLoading('register-btn', true);
+    try {
+      await Auth.signUp({
+        email:      document.getElementById('reg-email').value.trim(),
+        password:   pw,
+        handle:     document.getElementById('reg-handle').value.trim(),
+        name:       document.getElementById('reg-name').value.trim(),
+        inviteCode: document.getElementById('reg-invite').value.trim(),
+      });
+      // If email confirmation is disabled in Supabase → go to app
+      // If enabled → show message
+      showToast('가입 완료! 이메일을 확인하거나 로그인하세요.', 'success');
+      switchTab('login');
+    } catch (err) {
+      setError(friendlyError(err.message));
+    } finally {
+      setLoading('register-btn', false);
+    }
+  }
+
+  // ── Error messages ────────────────────────────────────────
+  function friendlyError(msg) {
+    if (!msg) return '알 수 없는 오류가 발생했습니다.';
+    if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    if (msg.includes('Email not confirmed')) return '이메일 인증이 필요합니다. 메일함을 확인하세요.';
+    if (msg.includes('User already registered')) return '이미 사용 중인 이메일입니다.';
+    if (msg.includes('유효하지 않은') || msg.includes('초대코드')) return msg;
+    if (msg.includes('이미 사용 중인 핸들')) return msg;
+    return msg;
+  }
+
+  // ── Toast ─────────────────────────────────────────────────
+  function showToast(msg, type = 'info') {
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.textContent = msg;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+</script>
+</body>
+</html>
