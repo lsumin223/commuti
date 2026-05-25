@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>창작 스튜디오 — UI 데모</title>
+<style>
+  :root {
+    --bg:#FDFCFB; --bg1:#F7F5F2; --bg2:#EEE9E3; --bg3:#E4DDD5;
+    --rose:#C4607A; --rose-l:#D4809A; --rose-xl:#F0D0D8;
+    --sage:#7A9E8A; --purple:#8B6FC4; --orange:#D4874A; --blue:#4A90D9;
+    --text0:#2C2420; --text1:#5C4F47; --text2:#9A8880;
+    --bd:#E8E0D8; --bd2:#D4C8BE;
+    --log-text:#7A9E8A; --log-image:#C4607A; --log-comic:#8B6FC4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text0);display:flex;height:100vh;overflow:hidden;font-size:14px}
+
+  /* ── Sidebar ── */
+  #sidebar{width:214px;min-width:214px;height:100vh;border-right:1px solid var(--bd);background:var(--bg1);display:flex;flex-direction:column;overflow:hidden}
+  .sb-logo{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--bd)}
+  .sb-logo-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--rose),var(--purple));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+  .sb-logo span{font-weight:700;font-size:13px;color:var(--text0)}
+  .sb-nav{flex:1;overflow-y:auto;padding:8px;space-y:2px}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;cursor:pointer;color:var(--text1);font-size:13px;text-decoration:none;transition:background .12s}
+  .nav-item:hover{background:var(--bg2)}
+  .nav-item.active{background:var(--rose-xl);color:var(--rose);font-weight:600}
+  .nav-divider{height:1px;background:var(--bd);margin:6px 0}
+  .nav-chevron{width:12px;height:12px;transition:transform .15s;flex-shrink:0;color:var(--text2)}
+  .nav-chevron.open{transform:rotate(90deg)}
+  .nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .nav-indent{margin-left:12px;border-left:1px solid var(--bd2);padding-left:8px}
+  .sb-bottom{padding:8px;border-top:1px solid var(--bd)}
+
+  /* ── Main ── */
+  #main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+  /* ── Page header ── */
+  .page-header{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--bd);background:var(--bg);font-size:12px;color:var(--text2);flex-shrink:0}
+  .page-header a{color:var(--text2);text-decoration:none;cursor:pointer}
+  .page-header a:hover{color:var(--rose)}
+  .page-header .sep{color:var(--bd2)}
+
+  /* ── Character header ── */
+  .char-header{display:flex;align-items:flex-end;gap:16px;padding:20px 24px 0;position:relative;overflow:hidden;flex-shrink:0}
+  .char-deco{position:absolute;top:-20px;right:-20px;width:160px;height:160px;border-radius:50%;opacity:.15}
+  .char-portrait{width:80px;height:96px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid var(--bd);background:var(--bg2);position:relative;z-index:1;cursor:pointer;overflow:hidden}
+  .char-portrait:hover .portrait-overlay{opacity:1}
+  .portrait-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;color:#fff;font-size:20px}
+  .char-info{flex:1;padding-bottom:12px;position:relative;z-index:1}
+  .char-name{font-size:20px;font-weight:700;color:var(--text0)}
+  .char-meta{font-size:12px;color:var(--text2);margin-top:4px}
+  .char-more{width:30px;height:30px;border-radius:8px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);background:var(--bg);margin-bottom:14px;transition:background .12s;position:relative;z-index:1}
+  .char-more:hover{background:var(--bg2)}
+
+  /* ── Char nav tabs ── */
+  .char-nav{display:flex;padding:0 24px;border-bottom:1px solid var(--bd);gap:4px;flex-shrink:0}
+  .tab-btn{padding:10px 14px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none}
+  .tab-btn:hover{color:var(--text0)}
+  .tab-btn.active{color:var(--rose);border-bottom-color:var(--rose)}
+
+  /* ── Content area ── */
+  .content{flex:1;overflow-y:auto}
+
+  /* ── Doc title bar ── */
+  .doc-bar{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--bd)}
+  .doc-bar .share-btn{margin-left:auto;display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--bd);border-radius:8px;font-size:12px;color:var(--text1);cursor:pointer;background:var(--bg);transition:all .12s}
+  .doc-bar .share-btn:hover{border-color:var(--bd2);background:var(--bg1)}
+
+  /* ── Jump bar ── */
+  .jump-bar{display:flex;align-items:center;gap:8px;padding:10px 24px;border-bottom:1px solid var(--bd);background:var(--bg1);flex-wrap:wrap}
+  .jump-chip{padding:4px 12px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--text1)}
+  .jump-chip:hover{background:color-mix(in srgb,var(--rose) 10%,transparent);color:var(--rose)}
+  .jump-chip.active{background:var(--rose);color:#fff}
+  .jump-add{width:24px;height:24px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:16px;transition:all .15s}
+  .jump-add:hover{background:color-mix(in srgb,var(--rose) 10%,transparent);color:var(--rose)}
+
+  /* ── Section ── */
+  .section-wrap{padding:24px;border-bottom:1px solid var(--bd2)}
+  .section-divider{display:flex;align-items:center;gap:8px;margin-bottom:12px;group:true}
+  .section-handle{width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--text2);opacity:0;border:none;background:none;flex-shrink:0;transition:opacity .12s}
+  .section-wrap:hover .section-handle{opacity:.5}
+  .section-diamond{color:var(--rose);opacity:.6;font-size:12px;flex-shrink:0}
+  .section-line{flex:1;height:1px;background:var(--bd)}
+  .section-title{font-size:13px;font-weight:600;color:var(--text0);padding:0 4px;white-space:nowrap}
+  .section-menu-btn{width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);opacity:0;border:none;background:none;border-radius:6px;transition:all .12s;flex-shrink:0}
+  .section-wrap:hover .section-menu-btn{opacity:.6}
+  .section-menu-btn:hover{opacity:1!important;background:var(--bg2)}
+  .editor-box{border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+  .editor-toolbar{display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:var(--bg);border-bottom:1px solid var(--bd)}
+  .tb-btn{padding:4px 7px;border-radius:5px;border:none;background:none;cursor:pointer;font-size:12px;color:var(--text1);transition:background .1s}
+  .tb-btn:hover{background:var(--bg2)}
+  .tb-btn.active{background:var(--rose-xl);color:var(--rose)}
+  .tb-sep{width:1px;height:20px;background:var(--bd);margin:2px 3px;flex-shrink:0}
+  .editor-toolbar2{display:flex;gap:6px;padding:6px 8px;background:var(--bg1);border-bottom:1px solid var(--bd);align-items:center}
+  .tb-select{border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:12px;color:var(--text1);background:var(--bg);cursor:pointer}
+  .editor-body{padding:16px 24px;min-height:120px;color:var(--text1);line-height:1.7;font-size:14px;outline:none}
+  .editor-body[contenteditable]:empty:before{content:attr(data-placeholder);color:var(--text2)}
+  .editor-footer{display:flex;justify-content:space-between;padding:6px 16px;border-top:1px solid var(--bd);font-size:11px;color:var(--text2)}
+
+  /* ── Log list ── */
+  .log-card{display:flex;gap:12px;padding:14px;background:var(--bg);border:1px solid var(--bd);border-radius:14px;cursor:pointer;transition:all .15s;margin-bottom:10px;text-decoration:none;color:inherit;border-left-width:3px}
+  .log-card:hover{border-color:color-mix(in srgb,var(--rose) 40%,var(--bd));box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .log-badge{font-size:10px;padding:2px 6px;border-radius:999px;font-weight:500;flex-shrink:0}
+  .log-meta{font-size:11px;color:var(--text2);margin-top:4px;display:flex;gap:8px;align-items:center}
+  .series-tag{background:var(--bg2);border-radius:4px;padding:1px 6px}
+
+  /* ── New log form ── */
+  .kind-card{padding:12px;border-radius:14px;border:2px solid var(--bd);cursor:pointer;transition:all .15s;text-align:left}
+  .kind-card:hover{border-color:var(--bd2);background:var(--bg1)}
+  .kind-card.active{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 5%,transparent)}
+  .vis-btn{flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center;color:var(--text2);background:var(--bg)}
+  .vis-btn:hover{border-color:var(--bd2);color:var(--text1)}
+  .vis-btn.active{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 8%,transparent);color:var(--rose)}
+
+  /* ── Image grid ── */
+  .img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .img-cell{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:var(--bg2)}
+  .img-cell img{width:100%;height:100%;object-fit:cover;transition:opacity .15s}
+  .img-cell:hover img{opacity:.85}
+  .img-add{border:2px dashed var(--bd);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text2);cursor:pointer;border-radius:12px;aspect-ratio:1;transition:all .15s;background:none}
+  .img-add:hover{border-color:color-mix(in srgb,var(--rose) 50%,transparent);color:var(--rose);background:color-mix(in srgb,var(--rose) 3%,transparent)}
+
+  /* ── Share popover ── */
+  .popover{position:absolute;right:0;top:calc(100% + 8px);width:280px;background:var(--bg);border:1px solid var(--bd);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.1);padding:16px;z-index:100}
+  .popover label{font-size:12px;color:var(--text2);display:block;margin-bottom:6px}
+  .popover input[type=text],.popover input[type=password],.popover select{width:100%;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;font-size:13px;color:var(--text0);background:var(--bg);margin-bottom:10px;outline:none}
+  .popover input:focus{border-color:var(--rose)}
+  .result-url{display:flex;gap:6px;margin-top:8px}
+  .result-url input{flex:1;padding:6px 8px;border:1px solid var(--bd);border-radius:8px;font-size:11px;color:var(--text1);background:var(--bg1);min-width:0}
+
+  /* ── Search ── */
+  .search-input-wrap{position:relative}
+  .search-input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text2)}
+  .search-input{width:100%;padding:10px 12px 10px 38px;border:1px solid var(--bd);border-radius:12px;font-size:14px;color:var(--text0);background:var(--bg);outline:none;transition:border .15s}
+  .search-input:focus{border-color:var(--rose)}
+  .result-section h3{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  .result-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;cursor:pointer;transition:all .15s;margin-bottom:6px}
+  .result-item:hover{border-color:color-mix(in srgb,var(--rose) 40%,var(--bd));background:var(--bg1)}
+  mark{background:color-mix(in srgb,var(--rose) 20%,transparent);color:var(--rose);border-radius:3px;padding:0 2px}
+
+  /* ── Settings ── */
+  .settings-section{margin-bottom:24px}
+  .settings-section h2{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:12px}
+  .info-row{display:flex;justify-content:space-between;padding:8px 12px;font-size:13px}
+  .info-row .label{color:var(--text2)}
+  .form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block}
+  .form-input{width:100%;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;color:var(--text0);background:var(--bg);outline:none;margin-bottom:12px;transition:border .15s}
+  .form-input:focus{border-color:var(--rose)}
+
+  /* ── Buttons ── */
+  .btn{padding:8px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:none}
+  .btn-primary{background:var(--rose);color:#fff}
+  .btn-primary:hover{opacity:.85}
+  .btn-ghost{background:none;border:1px solid var(--bd);color:var(--text1)}
+  .btn-ghost:hover{background:var(--bg1)}
+  .btn-sm{padding:5px 12px;font-size:12px}
+
+  /* ── Dropdown menu ── */
+  .dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--bg);border:1px solid var(--bd);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.08);min-width:130px;z-index:200;overflow:hidden}
+  .dropdown-item{display:block;width:100%;padding:7px 14px;font-size:13px;color:var(--text1);cursor:pointer;text-align:left;background:none;border:none;transition:background .1s}
+  .dropdown-item:hover{background:var(--bg1)}
+  .dropdown-item.danger{color:var(--rose)}
+  .dropdown-item.danger:hover{background:color-mix(in srgb,var(--rose) 5%,transparent)}
+  .dropdown-sep{height:1px;background:var(--bd);margin:2px 0}
+
+  /* ── Toast ── */
+  #toast{position:fixed;bottom:24px;right:24px;padding:10px 16px;background:var(--text0);color:#fff;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+  #toast.show{opacity:1}
+
+  /* ── Modal / overlay ── */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;align-items:center;justify-content:center}
+  .modal{background:var(--bg);border-radius:18px;padding:24px;max-width:460px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(0,0,0,.15)}
+  .modal h2{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text0)}
+
+  /* ── Focus mode ── */
+  #focus-mode{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 95%,transparent);backdrop-filter:blur(4px);z-index:400;display:none;align-items:flex-start;justify-content:center;overflow-y:auto}
+  #focus-mode.active{display:flex}
+  #focus-inner{width:100%;max-width:720px;min-height:100vh;background:#fff;box-shadow:0 0 60px rgba(0,0,0,.08)}
+  #focus-topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid var(--bd);background:var(--bg1);position:sticky;top:0;z-index:10}
+
+  /* ── Lightbox ── */
+  #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:none;align-items:center;justify-content:center}
+  #lightbox.active{display:flex}
+  #lightbox img{max-height:90vh;max-width:90vw;object-fit:contain;border-radius:8px}
+  .lb-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+  .lb-close:hover{background:rgba(255,255,255,.2)}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center}
+  .lb-nav:hover{background:rgba(255,255,255,.2)}
+  #lb-prev{left:16px} #lb-next{right:16px}
+  #lb-count{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:13px}
+
+  /* ── Misc ── */
+  .badge{font-size:11px;padding:2px 6px;border-radius:6px;font-weight:500}
+  .empty-state{text-align:center;padding:48px 24px;color:var(--text2)}
+  .empty-state .icon{font-size:40px;margin-bottom:12px}
+  input[type=checkbox]{accent-color:var(--rose)}
+  ::selection{background:var(--rose-xl);color:var(--rose)}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:10px}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════════════════ -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">✦</div>
+    <span>창작 스튜디오</span>
+  </div>
+
+  <nav class="sb-nav" id="sb-nav">
+    <a class="nav-item active" onclick="showPage('dashboard')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      대시보드
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <!-- Category: 달의 균열 -->
+    <div>
+      <div class="nav-item" onclick="toggleSb('cat1')">
+        <svg class="nav-chevron open" id="chev-cat1" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="nav-dot" style="background:#8B6FC4"></span>
+        달의 균열
+      </div>
+      <div id="cat1" class="nav-indent">
+
+        <!-- Character: 이은하 -->
+        <div>
+          <div class="nav-item" onclick="toggleSb('char1')">
+            <svg class="nav-chevron open" id="chev-char1" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>🌙</span>
+            이은하
+          </div>
+          <div id="char1" class="nav-indent">
+            <a class="nav-item active" style="font-size:12px" onclick="showPage('profile')">
+              <span class="nav-dot" style="background:var(--bd2)"></span>프로필
+            </a>
+            <a class="nav-item" style="font-size:12px" onclick="showPage('world')">
+              <span class="nav-dot" style="background:var(--bd2)"></span>세계관
+            </a>
+            <a class="nav-item" style="font-size:12px" onclick="showPage('secret')">
+              <span class="nav-dot" style="background:var(--bd2)"></span>비밀정보
+            </a>
+            <a class="nav-item" style="font-size:12px" onclick="showPage('clue')">
+              <span class="nav-dot" style="background:var(--bd2)"></span>단서
+            </a>
+            <a class="nav-item" style="font-size:12px" onclick="showPage('timeline')">
+              <span class="nav-dot" style="background:var(--bd2)"></span>타임라인
+            </a>
+            <div>
+              <div class="nav-item" style="font-size:12px" onclick="toggleSb('logs1');showPage('logs')">
+                <svg class="nav-chevron open" id="chev-logs1" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                로그
+              </div>
+              <div id="logs1" class="nav-indent">
+                <a class="nav-item" style="font-size:12px" onclick="showPage('log-text')">
+                  <span class="nav-dot" style="background:var(--log-text)"></span>
+                  <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">달빛 아래서</span>
+                </a>
+                <a class="nav-item" style="font-size:12px" onclick="showPage('log-image')">
+                  <span class="nav-dot" style="background:var(--log-image)"></span>
+                  <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">그림 모음</span>
+                </a>
+                <a class="nav-item" style="font-size:12px;color:var(--text2)" onclick="showPage('new-log')">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  새 로그
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Character: 최해준 -->
+        <div>
+          <div class="nav-item" onclick="toggleSb('char2')">
+            <svg class="nav-chevron" id="chev-char2" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span>☀️</span>
+            최해준
+          </div>
+          <div id="char2" style="display:none" class="nav-indent">
+            <a class="nav-item" style="font-size:12px" onclick="showPage('profile')">
+              <span class="nav-dot" style="background:var(--bd2)"></span>프로필
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-item" style="font-size:12px;color:var(--text2)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          캐릭터 추가
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-item" style="font-size:12px;color:var(--text2);margin-top:4px">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      카테고리 추가
+    </div>
+  </nav>
+
+  <div class="sb-bottom">
+    <a class="nav-item" onclick="showPage('search')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      검색
+    </a>
+    <a class="nav-item" onclick="showPage('settings')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      설정
+    </a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MAIN AREA
+════════════════════════════════════════════════════════════ -->
+<div id="main">
+
+  <!-- ── PAGE: Dashboard ── -->
+  <div id="page-dashboard" class="content" style="padding:24px;display:none">
+    <h1 style="font-size:18px;font-weight:700;color:var(--text0);margin-bottom:6px">안녕하세요 👋</h1>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:24px">최근 활동한 캐릭터를 이어서 작성하세요.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
+      <div onclick="showPage('profile')" style="padding:16px;border:1px solid var(--bd);border-radius:14px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--rose)'" onmouseout="this.style.borderColor='var(--bd)'">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--purple) 15%,transparent);display:flex;align-items:center;justify-content:center;font-size:20px">🌙</div>
+          <div><div style="font-weight:600;font-size:13px">이은하</div><div style="font-size:11px;color:var(--text2)">달의 균열</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text2)">프로필 · 오늘 수정</div>
+      </div>
+      <div onclick="showPage('log-text')" style="padding:16px;border:1px solid var(--bd);border-radius:14px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--rose)'" onmouseout="this.style.borderColor='var(--bd)'">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--sage) 15%,transparent);display:flex;align-items:center;justify-content:center;font-size:20px">📓</div>
+          <div><div style="font-weight:600;font-size:13px">달빛 아래서</div><div style="font-size:11px;color:var(--text2)">글로그</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text2)">어제 수정</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARACTER LAYOUT (profile/world/etc) ── -->
+  <div id="char-layout" style="display:none;flex-direction:column;height:100%">
+    <div class="page-header">
+      <a onclick="showPage('dashboard')">홈</a>
+      <span class="sep">›</span>
+      <a>달의 균열</a>
+      <span class="sep">›</span>
+      <span id="breadcrumb-char">이은하</span>
+      <span class="sep">›</span>
+      <span id="breadcrumb-page" style="color:var(--text0)">프로필</span>
+    </div>
+
+    <!-- Character header -->
+    <div class="char-header">
+      <div class="char-deco" id="char-deco" style="background:var(--purple)"></div>
+      <div class="char-portrait" onclick="showToast('두상 이미지 업로드 (실제 앱에서는 파일 선택)')">
+        <span id="char-emoji" style="font-size:32px">🌙</span>
+        <div class="portrait-overlay">📷</div>
+      </div>
+      <div class="char-info">
+        <div class="char-name" id="char-name">이은하</div>
+        <div class="char-meta">달의 균열 · 테마: <span style="color:var(--purple)">■</span> 보라</div>
+      </div>
+      <div style="position:relative">
+        <div class="char-more" onclick="toggleDropdown('char-menu')">···</div>
+        <div class="dropdown" id="char-menu" style="display:none">
+          <button class="dropdown-item" onclick="showToast('캐릭터 편집 모달');closeDropdowns()">편집</button>
+          <div class="dropdown-sep"></div>
+          <button class="dropdown-item danger" onclick="showToast('삭제 확인 다이얼로그');closeDropdowns()">삭제</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav tabs -->
+    <div class="char-nav" id="char-nav">
+      <button class="tab-btn active" style="border-bottom-color:var(--rose);color:var(--rose)" onclick="switchTab(this,'profile')">프로필</button>
+      <button class="tab-btn" onclick="switchTab(this,'world')">세계관</button>
+      <button class="tab-btn" onclick="switchTab(this,'secret')">비밀정보</button>
+      <button class="tab-btn" onclick="switchTab(this,'clue')">단서</button>
+      <button class="tab-btn" onclick="switchTab(this,'timeline')">타임라인</button>
+      <button class="tab-btn" onclick="switchTab(this,'logs')">로그</button>
+    </div>
+
+    <!-- Content slot -->
+    <div class="content" id="char-content"></div>
+  </div>
+
+</div><!-- #main -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     FOCUS MODE
+════════════════════════════════════════════════════════════ -->
+<div id="focus-mode">
+  <div id="focus-inner">
+    <div id="focus-topbar">
+      <span style="font-size:13px;color:var(--text2);font-weight:500">집중 모드</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeFocusMode()">Esc 또는 클릭하여 닫기</button>
+    </div>
+    <div id="focus-content"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════════════════════════ -->
+<div id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <img id="lb-img" src="" alt="">
+  <button class="lb-close" onclick="closeLightbox()">×</button>
+  <button class="lb-nav" id="lb-prev" onclick="lbNav(-1)">‹</button>
+  <button class="lb-nav" id="lb-next" onclick="lbNav(1)">›</button>
+  <div id="lb-count"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════════
+const SECTIONS = [
+  { id:'s1', title:'기본정보', content:'<strong>이은하</strong>는 달빛 아래서만 능력이 깨어나는 신비로운 소녀입니다.<br><br>외모는 평범해 보이지만 눈동자가 달의 위상에 따라 색이 변합니다.' },
+  { id:'s2', title:'외모', content:'신장 162cm, 은빛 머리카락, 보랏빛 눈동자.<br><br>항상 달 모양 헤어핀을 착용합니다.' },
+  { id:'s3', title:'성격', content:'조용하고 관찰력이 뛰어남. 낯선 사람에게는 차갑게 보이지만 가까운 사람에게는 따뜻함.' },
+  { id:'s4', title:'능력', content:'<strong>달빛 조작</strong>: 달빛을 물질화하여 방어막이나 공격 수단으로 사용.<br><br><em>단, 태양이 떠 있는 낮 시간대에는 능력 사용이 제한됨.</em>' },
+];
+
+const LOGS = [
+  { id:'log1', title:'달빛 아래서', kind:'TEXT', vis:'비공개', date:'2026.05.24', series:null,
+    content:'그날 밤, 달은 유난히 밝았다.<br><br>은하는 창문 너머로 손을 뻗었다. 손끝에서 은빛 빛이 피어올랐다.<br><br><blockquote style="border-left:3px solid var(--bd2);padding-left:12px;color:var(--text2)">"이게... 내 힘인가요?"</blockquote>' },
+  { id:'log2', title:'그림 모음', kind:'IMAGE', vis:'링크 공개', date:'2026.05.22', series:null,
+    images:['https://picsum.photos/seed/a1/300/300','https://picsum.photos/seed/a2/300/300','https://picsum.photos/seed/a3/300/300','https://picsum.photos/seed/a4/300/300'] },
+  { id:'log3', title:'기사단 입단 첫날', kind:'TEXT', vis:'비공개', date:'2026.05.20', series:'태양의 기사단 연대기',
+    content:'해준이 기사단에 발을 들인 건 열여섯 살 때였다. 훈련장에서 처음 만난 교관은 무서웠지만, 동료들은 따뜻했다.' },
+];
+
+const FREE_DOCS = {
+  world:    { icon:'🌍', color:'var(--sage)',   label:'세계관',   content:'<h2 style="font-size:17px;font-weight:700;margin-bottom:12px">달의 균열</h2>이 세계에는 달이 두 개 존재합니다. 하나는 현실의 달, 하나는 그림자의 달. 그림자의 달이 현실과 겹치는 날, 선택받은 자들에게 능력이 깃들게 됩니다.' },
+  secret:   { icon:'🔒', color:'var(--purple)', label:'비밀정보', content:'<em style="color:var(--text2)">이 섹션은 스포일러를 포함합니다.</em><br><br>은하의 정체는 사실 그림자의 달에서 온 존재입니다. 현실 세계의 이은하는 이미 어린 시절에 사망했으며, 그 자리를 대체하고 있습니다.' },
+  clue:     { icon:'🧩', color:'var(--orange)', label:'단서',     content:'• 1화: 하교길에 이상한 그림자를 목격<br>• 3화: 달이 두 개인 꿈을 반복적으로 꿈<br>• 7화: 헤어핀에서 빛이 방출됨' },
+  timeline: { icon:'📅', color:'var(--blue)',   label:'타임라인', content:'<strong>2년 전</strong> — 그림자의 달이 현실과 겹침, 능력 각성<br><strong>1년 전</strong> — 기사단으로부터 접촉 받음<br><strong>현재</strong> — 기사단에 합류, 정체 숨기는 중' },
+};
+
+// ════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════
+let currentPage = '';
+let sectionDragSrc = null;
+let lbImages = []; let lbIdx = 0;
+
+function showPage(page) {
+  closeDropdowns();
+  currentPage = page;
+
+  // Update sidebar active
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+  const isCharPage = ['profile','world','secret','clue','timeline','logs','log-text','log-image','new-log'].includes(page);
+
+  document.getElementById('page-dashboard').style.display = 'none';
+  const charLayout = document.getElementById('char-layout');
+  charLayout.style.display = 'none';
+
+  if (page === 'dashboard') {
+    document.getElementById('page-dashboard').style.display = 'block';
+    return;
+  }
+
+  if (page === 'search') { renderSearch(); return; }
+  if (page === 'settings') { renderSettings(); return; }
+
+  // Char layout pages
+  charLayout.style.display = 'flex';
+
+  // Update breadcrumb
+  const labels = {profile:'프로필',world:'세계관',secret:'비밀정보',clue:'단서',timeline:'타임라인',logs:'로그',
+    'log-text':'달빛 아래서','log-image':'그림 모음','new-log':'새 로그'};
+  document.getElementById('breadcrumb-page').textContent = labels[page] || page;
+
+  // Update tab active state
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+    btn.style.color = '';
+    btn.style.borderBottomColor = '';
+  });
+  const tabMap = {profile:0,world:1,secret:2,clue:3,timeline:4,logs:5,'log-text':5,'log-image':5,'new-log':5};
+  const tabIdx = tabMap[page];
+  if (tabIdx !== undefined) {
+    const tab = document.querySelectorAll('.tab-btn')[tabIdx];
+    tab.classList.add('active');
+    tab.style.color = 'var(--rose)';
+    tab.style.borderBottomColor = 'var(--rose)';
+  }
+
+  const cc = document.getElementById('char-content');
+
+  if (page === 'profile')  { cc.innerHTML = renderProfile(); bindProfile(); }
+  else if (FREE_DOCS[page]) { cc.innerHTML = renderFreeDoc(page); }
+  else if (page === 'logs') { cc.innerHTML = renderLogList(); }
+  else if (page === 'log-text') { cc.innerHTML = renderLogViewer('log1'); bindLogViewer(); }
+  else if (page === 'log-image') { cc.innerHTML = renderLogViewer('log2'); bindImageGrid(); }
+  else if (page === 'new-log') { cc.innerHTML = renderNewLog(); }
+}
+
+function switchTab(btn, page) { showPage(page); }
+
+// ════════════════════════════════════════════════════════════
+// PROFILE ANCHOR EDITOR
+// ════════════════════════════════════════════════════════════
+function renderProfile() {
+  const chips = SECTIONS.map((s,i) =>
+    `<button class="jump-chip${i===0?' active':''}" onclick="scrollSection('${s.id}')" id="chip-${s.id}">${s.title}</button>`
+  ).join('');
+
+  const sections = SECTIONS.map((s,i) => `
+    <div class="section-wrap" id="section-${s.id}" data-sid="${s.id}">
+      <div class="section-divider">
+        <button class="section-handle" draggable="true" title="드래그하여 순서 변경">⠿</button>
+        <span class="section-diamond">◆</span>
+        <div class="section-line"></div>
+        <span class="section-title" id="stitle-${s.id}" ondblclick="renameSection('${s.id}')">${s.title}</span>
+        <div class="section-line"></div>
+        <div style="position:relative">
+          <button class="section-menu-btn" onclick="toggleDropdown('smenu-${s.id}')">···</button>
+          <div class="dropdown" id="smenu-${s.id}" style="display:none">
+            <button class="dropdown-item" onclick="renameSection('${s.id}');closeDropdowns()">이름 변경</button>
+            <button class="dropdown-item" onclick="moveSection('${s.id}',-1);closeDropdowns()" ${i===0?'disabled style="opacity:.3"':''}>위로 이동</button>
+            <button class="dropdown-item" onclick="moveSection('${s.id}',1);closeDropdowns()" ${i===SECTIONS.length-1?'disabled style="opacity:.3"':''}>아래로 이동</button>
+            <div class="dropdown-sep"></div>
+            <button class="dropdown-item danger" onclick="deleteSection('${s.id}');closeDropdowns()">삭제</button>
+          </div>
+        </div>
+      </div>
+      <div class="editor-box">
+        ${renderEditorToolbar(s.id)}
+        <div class="editor-body" id="eb-${s.id}" contenteditable="true" data-placeholder="섹션 내용을 입력하세요…">${s.content}</div>
+        <div class="editor-footer">
+          <button onclick="toggleCharCount('${s.id}')" id="cc-${s.id}" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text2)">0자</button>
+          <span id="save-${s.id}" style="color:var(--sage)">저장됨 ✓</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="doc-bar">
+      <span style="font-size:18px">👤</span>
+      <span style="font-weight:600">프로필</span>
+      <div style="position:relative;margin-left:auto" id="share-wrap-profile">
+        <button class="doc-bar share-btn" onclick="toggleSharePopover('profile')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          공유
+        </button>
+        <div id="share-popover-profile" style="display:none"></div>
+      </div>
+    </div>
+    <div class="jump-bar" id="jumpbar">
+      ${chips}
+      <button class="jump-add" id="jump-add-btn" onclick="addSection()" title="새 섹션 추가">+</button>
+    </div>
+    <div id="profile-sections">${sections}</div>
+    <div style="padding:24px">
+      <button class="btn btn-ghost btn-sm" onclick="addSection()">+ 섹션 추가</button>
+    </div>
+  `;
+}
+
+function bindProfile() {
+  updateCharCounts();
+  // Drag-and-drop
+  document.querySelectorAll('.section-wrap').forEach(el => {
+    el.addEventListener('dragstart', e => { sectionDragSrc = el; el.style.opacity = '.4'; });
+    el.addEventListener('dragend', e => { el.style.opacity = '1'; });
+    el.addEventListener('dragover', e => { e.preventDefault(); el.style.background='var(--rose-xl)'; });
+    el.addEventListener('dragleave', e => { el.style.background=''; });
+    el.addEventListener('drop', e => {
+      e.preventDefault(); el.style.background='';
+      if (sectionDragSrc && sectionDragSrc !== el) {
+        const container = document.getElementById('profile-sections');
+        const nodes = [...container.children];
+        const srcIdx = nodes.indexOf(sectionDragSrc);
+        const dstIdx = nodes.indexOf(el);
+        if (srcIdx < dstIdx) el.after(sectionDragSrc);
+        else el.before(sectionDragSrc);
+        rebuildJumpBar();
+        showToast('순서가 변경되었습니다.');
+      }
+    });
+  });
+
+  // Autosave simulation
+  document.querySelectorAll('[contenteditable]').forEach(el => {
+    const id = el.id.replace('eb-','');
+    el.addEventListener('input', () => {
+      document.getElementById(`save-${id}`).textContent = '저장 중…';
+      document.getElementById(`save-${id}`).style.color = 'var(--text2)';
+      updateCharCount(id);
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => {
+        document.getElementById(`save-${id}`).textContent = '저장됨 ✓';
+        document.getElementById(`save-${id}`).style.color = 'var(--sage)';
+        showToast('자동 저장됨');
+      }, 2000);
+    });
+  });
+}
+
+function updateCharCounts() { SECTIONS.forEach(s => updateCharCount(s.id)); }
+function updateCharCount(id) {
+  const el = document.getElementById(`eb-${id}`);
+  const cc = document.getElementById(`cc-${id}`);
+  if (el && cc) cc.textContent = el.innerText.trim().length + '자';
+}
+function toggleCharCount(id) {
+  const el = document.getElementById(`eb-${id}`);
+  const cc = document.getElementById(`cc-${id}`);
+  if (!el || !cc) return;
+  const txt = el.innerText.replace(/\s/g,'').length;
+  const withSpace = el.innerText.trim().length;
+  cc.textContent = cc.textContent.includes('공백') ? withSpace+'자' : txt+'자 (공백 제외)';
+}
+
+function scrollSection(sid) {
+  const el = document.getElementById(`section-${sid}`);
+  if (el) { el.scrollIntoView({behavior:'smooth',block:'start'}); setActiveChip(sid); }
+}
+function setActiveChip(sid) {
+  document.querySelectorAll('.jump-chip').forEach(c => c.classList.remove('active'));
+  const chip = document.getElementById(`chip-${sid}`);
+  if (chip) chip.classList.add('active');
+}
+
+function renameSection(sid) {
+  const titleEl = document.getElementById(`stitle-${sid}`);
+  const old = titleEl.textContent;
+  const input = document.createElement('input');
+  input.value = old;
+  input.style.cssText = 'font-size:13px;font-weight:600;color:var(--text0);background:transparent;border:none;border-bottom:1px solid var(--rose);outline:none;width:'+(Math.max(old.length,4)*8)+'px';
+  titleEl.replaceWith(input);
+  input.focus(); input.select();
+  const done = () => {
+    const val = input.value.trim() || old;
+    const span = document.createElement('span');
+    span.id = `stitle-${sid}`; span.className = 'section-title';
+    span.textContent = val; span.ondblclick = () => renameSection(sid);
+    input.replaceWith(span);
+    const sec = SECTIONS.find(s => s.id === sid);
+    if (sec) sec.title = val;
+    rebuildJumpBar();
+    showToast('섹션 이름이 변경되었습니다.');
+  };
+  input.addEventListener('blur', done);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') done(); if (e.key === 'Escape') { input.value = old; done(); } });
+}
+
+function moveSection(sid, dir) {
+  const idx = SECTIONS.findIndex(s => s.id === sid);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= SECTIONS.length) return;
+  [SECTIONS[idx], SECTIONS[newIdx]] = [SECTIONS[newIdx], SECTIONS[idx]];
+  document.getElementById('char-content').innerHTML = renderProfile();
+  bindProfile();
+  showToast('순서 변경됨');
+}
+
+function deleteSection(sid) {
+  const idx = SECTIONS.findIndex(s => s.id === sid);
+  if (idx === -1) return;
+  if (!confirm(`"${SECTIONS[idx].title}" 섹션을 삭제하시겠습니까?`)) return;
+  SECTIONS.splice(idx, 1);
+  document.getElementById('char-content').innerHTML = renderProfile();
+  bindProfile();
+  showToast('섹션이 삭제되었습니다.');
+}
+
+let addingSection = false;
+function addSection() {
+  if (addingSection) return;
+  addingSection = true;
+  const jb = document.getElementById('jumpbar');
+  const addBtn = document.getElementById('jump-add-btn');
+  const wrap = document.createElement('div');
+  wrap.style.display = 'flex'; wrap.style.alignItems = 'center'; wrap.style.gap = '6px';
+  const input = document.createElement('input');
+  input.placeholder = '섹션 이름'; input.style.cssText = 'padding:3px 8px;font-size:12px;border:1px solid var(--rose);border-radius:999px;outline:none;width:96px;background:var(--bg)';
+  const ok = document.createElement('button');
+  ok.className='btn btn-primary btn-sm'; ok.textContent='추가';
+  const cancel = document.createElement('button');
+  cancel.className='btn btn-ghost btn-sm'; cancel.textContent='취소';
+  wrap.append(input, ok, cancel);
+  jb.insertBefore(wrap, addBtn);
+  input.focus();
+  const finish = () => {
+    const title = input.value.trim() || '새 섹션';
+    const id = 's' + Date.now();
+    SECTIONS.push({ id, title, content:'' });
+    document.getElementById('char-content').innerHTML = renderProfile();
+    bindProfile();
+    setTimeout(() => document.getElementById(`section-${id}`)?.scrollIntoView({behavior:'smooth'}), 100);
+    showToast(`"${title}" 섹션이 추가되었습니다.`);
+    addingSection = false;
+  };
+  const abort = () => { wrap.remove(); addingSection = false; };
+  ok.onclick = finish;
+  cancel.onclick = abort;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') finish(); if (e.key === 'Escape') abort(); });
+}
+
+function rebuildJumpBar() {
+  const jb = document.getElementById('jumpbar');
+  if (!jb) return;
+  const chips = SECTIONS.map((s,i) =>
+    `<button class="jump-chip${i===0?' active':''}" onclick="scrollSection('${s.id}')" id="chip-${s.id}">${s.title}</button>`
+  ).join('');
+  jb.innerHTML = chips + `<button class="jump-add" id="jump-add-btn" onclick="addSection()" title="새 섹션 추가">+</button>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// FREE DOC
+// ════════════════════════════════════════════════════════════
+function renderFreeDoc(kind) {
+  const doc = FREE_DOCS[kind];
+  return `
+    <div class="doc-bar">
+      <span style="font-size:18px">${doc.icon}</span>
+      <span style="font-weight:600">${doc.label}</span>
+      <div style="position:relative;margin-left:auto">
+        <button class="doc-bar share-btn" onclick="toggleSharePopover('${kind}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          공유
+        </button>
+        <div id="share-popover-${kind}" style="display:none"></div>
+      </div>
+    </div>
+    <div class="editor-box" style="margin:20px 24px">
+      ${renderEditorToolbar('free-'+kind)}
+      <div class="editor-body" contenteditable="true" data-placeholder="${doc.label}을 자유롭게 작성하세요…">${doc.content}</div>
+      <div class="editor-footer">
+        <span style="color:var(--text2)">0자</span>
+        <span style="color:var(--sage)">저장됨 ✓</span>
+      </div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════
+// EDITOR TOOLBAR
+// ════════════════════════════════════════════════════════════
+function renderEditorToolbar(id) {
+  return `
+    <div class="editor-toolbar">
+      <button class="tb-btn" title="굵게" onclick="execCmd('bold');toggleToolbarBtn(this)"><b>B</b></button>
+      <button class="tb-btn" title="기울기" onclick="execCmd('italic');toggleToolbarBtn(this)"><i>I</i></button>
+      <button class="tb-btn" title="밑줄" onclick="execCmd('underline');toggleToolbarBtn(this)"><u>U</u></button>
+      <button class="tb-btn" title="취소선" onclick="execCmd('strikeThrough');toggleToolbarBtn(this)"><s>S</s></button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="execCmd('formatBlock','h1')">H1</button>
+      <button class="tb-btn" onclick="execCmd('formatBlock','h2')">H2</button>
+      <button class="tb-btn" onclick="execCmd('formatBlock','h3')">H3</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="execCmd('formatBlock','blockquote')" title="인용">❝</button>
+      <button class="tb-btn" onclick="execCmd('insertHorizontalRule')" title="구분선">—</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="execCmd('insertUnorderedList')" title="목록">☰</button>
+      <button class="tb-btn" onclick="execCmd('insertOrderedList')" title="번호 목록">①</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" title="집중 모드" onclick="openFocusMode('${id}')">⛶</button>
+    </div>
+    <div class="editor-toolbar2">
+      <select class="tb-select" onchange="execCmd('fontName',this.value)">
+        <option>기본 서체</option><option value="serif">명조</option><option value="monospace">고정폭</option>
+      </select>
+      <select class="tb-select" onchange="execCmd('fontSize',this.value)">
+        <option value="">크기</option><option value="2">12px</option><option value="3">14px</option>
+        <option value="4">18px</option><option value="5">24px</option><option value="6">32px</option>
+      </select>
+      <input type="color" value="#C4607A" title="글자 색상" onchange="execCmd('foreColor',this.value)"
+        style="width:26px;height:26px;border:1px solid var(--bd);border-radius:6px;padding:2px;cursor:pointer;background:none">
+      <input type="color" value="#F0D0D8" title="형광펜" onchange="execCmd('hiliteColor',this.value)"
+        style="width:26px;height:26px;border:1px solid var(--bd);border-radius:6px;padding:2px;cursor:pointer;background:none">
+    </div>
+  `;
+}
+
+function execCmd(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+}
+function toggleToolbarBtn(btn) { btn.classList.toggle('active'); }
+
+function openFocusMode(id) {
+  const eb = document.getElementById('eb-'+id) || document.querySelector('[contenteditable]');
+  if (!eb) return;
+  const fc = document.getElementById('focus-content');
+  fc.innerHTML = `
+    ${renderEditorToolbar('focus')}
+    <div class="editor-body" contenteditable="true" style="min-height:60vh;font-size:15px;line-height:1.8;padding:32px 40px">${eb.innerHTML}</div>
+    <div style="padding:12px 24px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:12px;color:var(--text2)">
+      <span>0자</span><span style="color:var(--sage)">저장됨 ✓</span>
+    </div>
+  `;
+  document.getElementById('focus-mode').classList.add('active');
+}
+function closeFocusMode() {
+  document.getElementById('focus-mode').classList.remove('active');
+  showToast('집중 모드 종료');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeFocusMode(); closeLightbox(); } });
+
+// ════════════════════════════════════════════════════════════
+// LOG LIST
+// ════════════════════════════════════════════════════════════
+function renderLogList() {
+  const tabs = ['전체','글로그','그림로그','만화로그'];
+  const tabHtml = tabs.map((t,i) =>
+    `<button class="jump-chip${i===0?' active':''}" onclick="filterLogs(this,'${t}')">${t}</button>`
+  ).join('');
+
+  const cards = LOGS.map(log => {
+    const kindColor = log.kind==='TEXT'?'var(--log-text)':log.kind==='IMAGE'?'var(--log-image)':'var(--log-comic)';
+    const kindLabel = log.kind==='TEXT'?'글로그':log.kind==='IMAGE'?'그림로그':'만화로그';
+    const thumb = log.images ? `<img src="${log.images[0]}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0" alt="">` : '';
+    const seriesTag = log.series ? `<span class="series-tag">📚 ${log.series}</span>` : '';
+    return `
+      <div class="log-card" style="border-left-color:${kindColor}" onclick="showPage('log-${log.kind.toLowerCase()}')">
+        ${thumb}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+            <span style="font-weight:600;color:var(--text0);font-size:14px">${log.title}</span>
+            <span class="badge" style="background:color-mix(in srgb,${kindColor} 15%,transparent);color:${kindColor};flex-shrink:0">${kindLabel}</span>
+          </div>
+          <div class="log-meta">${seriesTag}<span>${log.vis}</span><span>·</span><span>${log.date}</span></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="doc-bar" style="border-left:3px solid var(--text2)">
+      <span style="font-size:18px">📓</span>
+      <span style="font-weight:600">로그</span>
+      <button onclick="showPage('new-log')" class="btn btn-primary btn-sm" style="margin-left:auto;display:flex;align-items:center;gap:6px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        새 로그
+      </button>
+    </div>
+    <div class="jump-bar" id="log-tabs">${tabHtml}</div>
+    <div style="padding:20px 24px" id="log-list">${cards}</div>
+  `;
+}
+
+function filterLogs(btn, kind) {
+  document.querySelectorAll('#log-tabs .jump-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const list = document.getElementById('log-list');
+  const filtered = kind === '전체' ? LOGS : LOGS.filter(l =>
+    (kind==='글로그'&&l.kind==='TEXT')||(kind==='그림로그'&&l.kind==='IMAGE')||(kind==='만화로그'&&l.kind==='COMIC')
+  );
+  list.innerHTML = filtered.length === 0
+    ? '<div class="empty-state"><div class="icon">📭</div><p>해당 종류의 로그가 없습니다.</p></div>'
+    : filtered.map(log => {
+        const kc = log.kind==='TEXT'?'var(--log-text)':log.kind==='IMAGE'?'var(--log-image)':'var(--log-comic)';
+        const kl = log.kind==='TEXT'?'글로그':log.kind==='IMAGE'?'그림로그':'만화로그';
+        const th = log.images ? `<img src="${log.images[0]}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0">` : '';
+        return `<div class="log-card" style="border-left-color:${kc}" onclick="showPage('log-${log.kind.toLowerCase()}')">${th}<div style="flex:1;min-width:0"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><span style="font-weight:600">${log.title}</span><span class="badge" style="background:color-mix(in srgb,${kc} 15%,transparent);color:${kc}">${kl}</span></div><div class="log-meta"><span>${log.vis}</span><span>·</span><span>${log.date}</span></div></div></div>`;
+      }).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// LOG VIEWER
+// ════════════════════════════════════════════════════════════
+function renderLogViewer(logId) {
+  const log = LOGS.find(l => l.id === logId);
+  if (!log) return '';
+  const kc = log.kind==='TEXT'?'var(--log-text)':log.kind==='IMAGE'?'var(--log-image)':'var(--log-comic)';
+  const kl = log.kind==='TEXT'?'글로그':log.kind==='IMAGE'?'그림로그':'만화로그';
+
+  let body = '';
+  if (log.kind === 'TEXT') {
+    body = `<div class="editor-box" style="margin:20px 24px">
+      ${renderEditorToolbar('log-'+logId)}
+      <div class="editor-body" id="log-eb" contenteditable="true" data-placeholder="로그 내용을 작성하세요…">${log.content}</div>
+      <div class="editor-footer"><span style="color:var(--text2)">0자</span><span style="color:var(--sage)">저장됨 ✓</span></div>
+    </div>`;
+  } else if (log.images) {
+    body = `<div style="padding:20px 24px">
+      <div class="img-grid" id="img-grid-demo">${log.images.map((url,i) => `
+        <div class="img-cell" onclick="openLightbox(${i})">
+          <img src="${url}" alt="이미지 ${i+1}">
+        </div>`).join('')}
+        <div class="img-add" onclick="showToast('실제 앱에서는 파일 업로드가 됩니다')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:11px">이미지 추가</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="doc-bar" style="border-left:3px solid ${kc}">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span class="badge" style="background:color-mix(in srgb,${kc} 15%,transparent);color:${kc}">${kl}</span>
+          <span style="font-size:11px;color:var(--text2)">🔒 ${log.vis}</span>
+        </div>
+        <div style="font-size:16px;font-weight:700;cursor:text" id="log-title" ondblclick="editLogTitle()">${log.title}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">수정: ${log.date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="position:relative">
+          <button class="doc-bar share-btn" onclick="toggleSharePopover('log')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            공유
+          </button>
+          <div id="share-popover-log" style="display:none"></div>
+        </div>
+        <div style="position:relative">
+          <button class="char-more" onclick="toggleDropdown('log-menu')">···</button>
+          <div class="dropdown" id="log-menu" style="display:none">
+            <button class="dropdown-item" onclick="editLogTitle();closeDropdowns()">제목 변경</button>
+            <div class="dropdown-sep"></div>
+            <button class="dropdown-item danger" onclick="showToast('삭제 확인 다이얼로그');closeDropdowns()">삭제</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    ${body}
+  `;
+}
+
+function editLogTitle() {
+  const el = document.getElementById('log-title');
+  const old = el.textContent;
+  const input = document.createElement('input');
+  input.value = old;
+  input.style.cssText = 'font-size:16px;font-weight:700;background:transparent;border:none;border-bottom:1px solid var(--rose);outline:none;width:100%;color:var(--text0)';
+  el.replaceWith(input); input.focus(); input.select();
+  const done = () => {
+    const span = document.createElement('div');
+    span.id = 'log-title'; span.style.cssText = 'font-size:16px;font-weight:700;cursor:text';
+    span.ondblclick = editLogTitle;
+    span.textContent = input.value.trim() || old;
+    input.replaceWith(span);
+    showToast('제목이 변경되었습니다.');
+  };
+  input.addEventListener('blur', done);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') done(); if (e.key === 'Escape') { input.value = old; done(); } });
+}
+
+function bindLogViewer() {
+  const eb = document.getElementById('log-eb');
+  if (eb) {
+    eb.addEventListener('input', () => showToast('자동 저장 예약됨…'));
+  }
+}
+
+function bindImageGrid() {
+  lbImages = LOGS.find(l => l.id === 'log2')?.images || [];
+}
+
+// ════════════════════════════════════════════════════════════
+// NEW LOG
+// ════════════════════════════════════════════════════════════
+function renderNewLog() {
+  return `
+    <div class="doc-bar" style="border-left:3px solid var(--text2)">
+      <span style="font-size:18px">✏️</span>
+      <span style="font-weight:600">새 로그 작성</span>
+    </div>
+    <div style="padding:24px;max-width:480px">
+      <div style="margin-bottom:20px">
+        <label class="form-label">제목</label>
+        <input class="form-input" id="new-log-title" placeholder="로그 제목을 입력하세요">
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label class="form-label">로그 종류</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <div class="kind-card active" id="kind-TEXT" onclick="selectKind('TEXT')">
+            <div style="font-size:20px;margin-bottom:4px">✏️</div>
+            <div style="font-size:13px;font-weight:500;color:var(--rose)">글로그</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4">텍스트 에디터로 작성</div>
+          </div>
+          <div class="kind-card" id="kind-IMAGE" onclick="selectKind('IMAGE')">
+            <div style="font-size:20px;margin-bottom:4px">🖼️</div>
+            <div style="font-size:13px;font-weight:500">그림로그</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4">이미지 업로드</div>
+          </div>
+          <div class="kind-card" id="kind-COMIC" onclick="selectKind('COMIC')">
+            <div style="font-size:20px;margin-bottom:4px">📖</div>
+            <div style="font-size:13px;font-weight:500">만화로그</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.4">페이지 단위 구성</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label class="form-label">공개 설정</label>
+        <div style="display:flex;gap:8px">
+          <button class="vis-btn active" id="vis-private" onclick="selectVis('private')">비공개</button>
+          <button class="vis-btn" id="vis-link" onclick="selectVis('link')">링크 공개</button>
+          <button class="vis-btn" id="vis-secret" onclick="selectVis('secret')">비밀번호</button>
+        </div>
+        <p id="vis-desc" style="font-size:11px;color:var(--text2);margin-top:6px">나만 볼 수 있습니다</p>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <label class="form-label">시리즈 (선택)</label>
+        <div style="display:flex;gap:8px">
+          <select class="form-input" style="margin-bottom:0">
+            <option value="">없음</option>
+            <option>태양의 기사단 연대기</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('시리즈 이름 입력 후 생성')">+ 새 시리즈</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="submitNewLog()">로그 생성</button>
+        <button class="btn btn-ghost" onclick="showPage('logs')">취소</button>
+      </div>
+    </div>
+  `;
+}
+
+let selectedKind = 'TEXT', selectedVis = 'private';
+function selectKind(kind) {
+  selectedKind = kind;
+  ['TEXT','IMAGE','COMIC'].forEach(k => {
+    const el = document.getElementById('kind-'+k);
+    if (!el) return;
+    el.classList.toggle('active', k === kind);
+    el.querySelector('div:nth-child(2)').style.color = k === kind ? 'var(--rose)' : '';
+  });
+}
+function selectVis(vis) {
+  selectedVis = vis;
+  const descs = { private:'나만 볼 수 있습니다', link:'링크를 아는 사람만 볼 수 있습니다', secret:'비밀번호를 아는 사람만 볼 수 있습니다' };
+  ['private','link','secret'].forEach(v => document.getElementById('vis-'+v)?.classList.toggle('active', v === vis));
+  const d = document.getElementById('vis-desc');
+  if (d) d.textContent = descs[vis];
+}
+function submitNewLog() {
+  const title = document.getElementById('new-log-title')?.value.trim();
+  if (!title) { showToast('제목을 입력하세요'); return; }
+  const kindLabel = {TEXT:'글로그',IMAGE:'그림로그',COMIC:'만화로그'}[selectedKind];
+  showToast(`"${title}" ${kindLabel}이 생성되었습니다!`);
+  showPage('logs');
+}
+
+// ════════════════════════════════════════════════════════════
+// SEARCH
+// ════════════════════════════════════════════════════════════
+function renderSearch() {
+  const charLayout = document.getElementById('char-layout');
+  charLayout.style.display = 'flex';
+  document.getElementById('breadcrumb-char').textContent = '';
+  document.getElementById('breadcrumb-page').textContent = '검색';
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.style.color=''; b.style.borderBottomColor=''; });
+
+  const cc = document.getElementById('char-content');
+  cc.innerHTML = `
+    <div style="padding:20px 24px 0">
+      <h1 style="font-size:14px;font-weight:600;margin-bottom:12px">검색</h1>
+      <div class="search-input-wrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="search-q" placeholder="캐릭터, 로그, 섹션 내용 검색…" oninput="doSearch(this.value)" autocomplete="off">
+      </div>
+    </div>
+    <div id="search-results" style="padding:16px 24px"></div>
+  `;
+  document.getElementById('search-q').focus();
+}
+
+const SEARCH_DATA = [
+  { type:'char', name:'이은하', sub:'달의 균열', emoji:'🌙', page:'profile' },
+  { type:'char', name:'최해준', sub:'달의 균열', emoji:'☀️', page:'profile' },
+  { type:'log',  name:'달빛 아래서', sub:'글로그 · 2026.05.24', page:'log-text' },
+  { type:'log',  name:'그림 모음',   sub:'그림로그 · 2026.05.22', page:'log-image' },
+  { type:'log',  name:'기사단 입단 첫날', sub:'글로그 · 태양의 기사단 연대기', page:'logs' },
+  { type:'sec',  name:'기본정보', sub:'이은하 · 프로필', page:'profile' },
+  { type:'sec',  name:'능력',     sub:'이은하 · 프로필', page:'profile' },
+  { type:'sec',  name:'달의 균열 세계관', sub:'이은하 · 세계관', page:'world' },
+];
+
+function doSearch(q) {
+  const r = document.getElementById('search-results');
+  if (!q.trim()) { r.innerHTML = ''; return; }
+  const matches = SEARCH_DATA.filter(d => d.name.includes(q) || d.sub.includes(q));
+  if (!matches.length) { r.innerHTML = `<p style="color:var(--text2);font-size:13px">"${q}"에 대한 결과가 없습니다.</p>`; return; }
+
+  const hl = t => t.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'), m => `<mark>${m}</mark>`);
+  const icons = { char:'👥', log:'📓', sec:'📄' };
+  const groups = { char:[], log:[], sec:[] };
+  matches.forEach(m => groups[m.type].push(m));
+  const labels = { char:'캐릭터', log:'로그', sec:'섹션' };
+
+  r.innerHTML = `<p style="font-size:12px;color:var(--text2);margin-bottom:12px">${matches.length}개 결과</p>` +
+    Object.entries(groups).filter(([,v]) => v.length).map(([k,v]) => `
+      <div class="result-section" style="margin-bottom:16px">
+        <h3>${labels[k]}</h3>
+        ${v.map(m => `
+          <div class="result-item" onclick="showPage('${m.page}')">
+            <span style="font-size:20px">${m.emoji||icons[k]}</span>
+            <div>
+              <div style="font-size:13px;font-weight:500">${hl(m.name)}</div>
+              <div style="font-size:11px;color:var(--text2)">${hl(m.sub)}</div>
+            </div>
+          </div>`).join('')}
+      </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════════════════════
+function renderSettings() {
+  const charLayout = document.getElementById('char-layout');
+  charLayout.style.display = 'flex';
+  document.getElementById('breadcrumb-char').textContent = '';
+  document.getElementById('breadcrumb-page').textContent = '설정';
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.style.color=''; b.style.borderBottomColor=''; });
+
+  document.getElementById('char-content').innerHTML = `
+    <div style="padding:20px 24px;max-width:420px">
+      <h1 style="font-size:14px;font-weight:600;margin-bottom:20px">설정</h1>
+
+      <div class="settings-section">
+        <h2>계정 정보</h2>
+        <div style="background:var(--bg1);border:1px solid var(--bd);border-radius:12px;overflow:hidden">
+          <div class="info-row" style="border-bottom:1px solid var(--bd)"><span class="label">이메일</span><span>demo@example.com</span></div>
+          <div class="info-row"><span class="label">닉네임</span><span>창작자</span></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>정보 수정</h2>
+        <label class="form-label">닉네임</label>
+        <input class="form-input" value="창작자" id="set-nick">
+
+        <div style="border-top:1px solid var(--bd);padding-top:16px;margin-top:4px;margin-bottom:12px">
+          <p style="font-size:12px;color:var(--text2);margin-bottom:12px">비밀번호 변경 (선택)</p>
+          <label class="form-label">현재 비밀번호</label>
+          <input class="form-input" type="password" placeholder="변경 시 입력">
+          <label class="form-label">새 비밀번호</label>
+          <input class="form-input" type="password" placeholder="6자 이상">
+          <label class="form-label">새 비밀번호 확인</label>
+          <input class="form-input" type="password">
+        </div>
+        <button class="btn btn-primary" onclick="showToast('설정이 저장되었습니다 ✓')">저장</button>
+      </div>
+
+      <div class="settings-section">
+        <h2>계정</h2>
+        <button class="btn btn-ghost" style="width:100%;text-align:center" onclick="showToast('로그아웃 처리됨 (데모)')">로그아웃</button>
+      </div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════════════════
+// SHARE POPOVER
+// ════════════════════════════════════════════════════════════
+function toggleSharePopover(id) {
+  const el = document.getElementById('share-popover-'+id);
+  if (!el) return;
+  const visible = el.style.display === 'block';
+  document.querySelectorAll('[id^="share-popover-"]').forEach(e => e.style.display = 'none');
+  if (!visible) {
+    el.style.display = 'block';
+    el.innerHTML = renderSharePopoverContent(id);
+  }
+}
+
+function renderSharePopoverContent(id) {
+  return `
+    <div class="popover">
+      <div style="font-size:13px;font-weight:600;color:var(--text0);margin-bottom:12px">공유 링크 생성</div>
+      <div id="share-form-${id}">
+        <label><input type="checkbox" id="use-pw-${id}" onchange="togglePwField('${id}')"> 비밀번호 설정</label>
+        <div id="pw-field-${id}" style="display:none;margin-top:8px">
+          <input type="password" placeholder="비밀번호 입력">
+        </div>
+        <div style="margin-top:10px">
+          <label>만료 기간</label>
+          <select style="margin-top:4px">
+            <option>만료 없음</option><option>1일</option><option>7일</option><option>30일</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:12px;font-size:13px" onclick="generateLink('${id}')">링크 생성</button>
+      </div>
+      <div id="share-result-${id}" style="display:none">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:8px">링크가 생성되었습니다!</p>
+        <div class="result-url">
+          <input type="text" value="https://commuti.app/share/demo-token-abc123" readonly id="share-url-${id}">
+          <button class="btn btn-primary btn-sm" onclick="copyLink('${id}')">복사</button>
+        </div>
+        <button onclick="document.getElementById('share-form-${id}').style.display='block';document.getElementById('share-result-${id}').style.display='none'" style="background:none;border:none;font-size:12px;color:var(--text2);cursor:pointer;margin-top:8px">새 링크 생성</button>
+      </div>
+    </div>
+  `;
+}
+
+function togglePwField(id) {
+  const cb = document.getElementById('use-pw-'+id);
+  const f = document.getElementById('pw-field-'+id);
+  if (f) f.style.display = cb?.checked ? 'block' : 'none';
+}
+
+function generateLink(id) {
+  const form = document.getElementById('share-form-'+id);
+  const result = document.getElementById('share-result-'+id);
+  if (form) form.style.display = 'none';
+  if (result) result.style.display = 'block';
+}
+
+function copyLink(id) {
+  const input = document.getElementById('share-url-'+id);
+  if (!input) return;
+  navigator.clipboard.writeText(input.value).catch(() => {});
+  showToast('링크가 클립보드에 복사되었습니다!');
+}
+
+// ════════════════════════════════════════════════════════════
+// LIGHTBOX
+// ════════════════════════════════════════════════════════════
+function openLightbox(idx) {
+  lbImages = LOGS.find(l => l.id === 'log2')?.images || [];
+  lbIdx = idx;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+function lbNav(dir) { lbIdx = Math.max(0, Math.min(lbImages.length-1, lbIdx+dir)); updateLightbox(); }
+function updateLightbox() {
+  document.getElementById('lb-img').src = lbImages[lbIdx];
+  document.getElementById('lb-count').textContent = `${lbIdx+1} / ${lbImages.length}`;
+}
+
+// ════════════════════════════════════════════════════════════
+// DROPDOWN / TOGGLE UTILS
+// ════════════════════════════════════════════════════════════
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const visible = el.style.display === 'block';
+  closeDropdowns();
+  if (!visible) el.style.display = 'block';
+}
+function closeDropdowns() {
+  document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.char-more') && !e.target.closest('.dropdown') &&
+      !e.target.closest('.section-menu-btn') && !e.target.closest('[id^="share-popover-"]') &&
+      !e.target.closest('.doc-bar.share-btn') && !e.target.closest('.share-btn')) {
+    closeDropdowns();
+    document.querySelectorAll('[id^="share-popover-"]').forEach(e => e.style.display = 'none');
+  }
+});
+
+function toggleSb(id) {
+  const el = document.getElementById(id);
+  const chev = document.getElementById('chev-'+id);
+  if (!el) return;
+  const hidden = el.style.display === 'none';
+  el.style.display = hidden ? '' : 'none';
+  if (chev) chev.classList.toggle('open', hidden);
+}
+
+// ════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+showPage('profile');
+</script>
+</body>
+</html>
