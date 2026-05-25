@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Editor from '@/components/Editor';
+import SharePopover from '@/components/SharePopover';
 
 interface DocMeta {
   icon: string;
@@ -51,7 +52,8 @@ export default function FreeDocPage({ charid, kind }: Props) {
       <div className="flex items-center gap-2.5 px-6 py-4 border-b border-bd"
         style={{ borderLeft: `3px solid ${meta.color}` }}>
         <span className="text-lg">{meta.icon}</span>
-        <span className="font-semibold text-text0">{meta.label}</span>
+        <span className="font-semibold text-text0 flex-1">{meta.label}</span>
+        <SharePopover targetType="document" documentId={doc.id} />
       </div>
 
       <Editor

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Editor from '@/components/Editor';
+import SharePopover from '@/components/SharePopover';
 
 interface Series { id: string; name: string; }
 interface Log {
@@ -314,6 +315,8 @@ export default function LogViewerPage({ cid, charid, logid }: Props) {
             수정: {format(new Date(log.updatedAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
           </p>
         </div>
+
+        <SharePopover targetType="log" logId={logid} />
 
         {/* ··· menu */}
         <div className="relative flex-shrink-0" ref={menuRef}>
