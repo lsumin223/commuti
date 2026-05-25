@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Nanum+Myeongjo:wght@400;700&family=Nanum+Pen+Script&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
 @tailwind base;
 @tailwind components;
@@ -90,3 +91,85 @@ html, body {
 /* Spoiler / 접은글 */
 details.spoiler summary { cursor: pointer; color: var(--rose); font-weight: 600; }
 details.spoiler summary::marker { color: var(--rose); }
+
+/* ── Tiptap image ─────────────────────────────────────── */
+.tiptap-editor .ProseMirror img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 4px 0;
+  cursor: pointer;
+}
+.tiptap-editor .ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--rose);
+}
+
+/* ── Spoiler / 접은글 ─────────────────────────────────── */
+.tiptap-editor .ProseMirror details.spoiler {
+  border: 1.5px solid var(--rose-l);
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin: 8px 0;
+}
+.tiptap-editor .ProseMirror details.spoiler summary {
+  cursor: pointer;
+  color: var(--rose);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 0;
+  user-select: none;
+}
+.tiptap-editor .ProseMirror details.spoiler .spoiler-content {
+  padding-top: 4px;
+}
+
+/* ── Table ────────────────────────────────────────────── */
+.tiptap-editor .ProseMirror .tableWrapper {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.tiptap-editor .ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+.tiptap-editor .ProseMirror th,
+.tiptap-editor .ProseMirror td {
+  border: 1.5px solid var(--bd2);
+  padding: 6px 10px;
+  vertical-align: top;
+  position: relative;
+}
+.tiptap-editor .ProseMirror .selectedCell:after {
+  background: var(--rose-xl);
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+.tiptap-editor .ProseMirror .column-resize-handle {
+  background-color: var(--rose);
+  bottom: -2px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+}
+.tiptap-editor .ProseMirror.resize-cursor { cursor: col-resize; }
+
+/* ── Placeholder ─────────────────────────────────────── */
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--text2);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ── Link ────────────────────────────────────────────── */
+.tiptap-editor .ProseMirror a {
+  color: var(--rose);
+  text-decoration: underline;
+  cursor: pointer;
+}
