@@ -67,11 +67,17 @@ const LOG_KIND_DOT: Record<string, string> = {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { categories, loading, fetch,
+  const { categories, loading, fetch, refresh,
           collapsedCategories, collapsedCharacters, collapsedLogs,
           toggleCategory, toggleCharacter, toggleLogs } = useSidebarStore();
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener('sidebar-refresh', handler);
+    return () => window.removeEventListener('sidebar-refresh', handler);
+  }, [refresh]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
