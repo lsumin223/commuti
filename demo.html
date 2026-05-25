@@ -83,8 +83,8 @@
   .section-diamond{color:var(--rose);opacity:.6;font-size:12px;flex-shrink:0}
   .section-line{flex:1;height:1px;background:var(--bd)}
   .section-title{font-size:13px;font-weight:600;color:var(--text0);padding:0 4px;white-space:nowrap}
-  .section-menu-btn{width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);opacity:0;border:none;background:none;border-radius:6px;transition:all .12s;flex-shrink:0}
-  .section-wrap:hover .section-menu-btn{opacity:.6}
+  .section-menu-btn{width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);opacity:.35;border:none;background:none;border-radius:6px;transition:all .12s;flex-shrink:0}
+  .section-wrap:hover .section-menu-btn{opacity:.7}
   .section-menu-btn:hover{opacity:1!important;background:var(--bg2)}
   .editor-box{border:1px solid var(--bd);border-radius:12px;overflow:hidden}
   .editor-toolbar{display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:var(--bg);border-bottom:1px solid var(--bd)}
@@ -113,13 +113,22 @@
   .vis-btn:hover{border-color:var(--bd2);color:var(--text1)}
   .vis-btn.active{border-color:var(--rose);background:color-mix(in srgb,var(--rose) 8%,transparent);color:var(--rose)}
 
-  /* ── Image grid ── */
-  .img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .img-cell{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:var(--bg2)}
-  .img-cell img{width:100%;height:100%;object-fit:cover;transition:opacity .15s}
-  .img-cell:hover img{opacity:.85}
-  .img-add{border:2px dashed var(--bd);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text2);cursor:pointer;border-radius:12px;aspect-ratio:1;transition:all .15s;background:none}
-  .img-add:hover{border-color:color-mix(in srgb,var(--rose) 50%,transparent);color:var(--rose);background:color-mix(in srgb,var(--rose) 3%,transparent)}
+  /* ── Image carousel ── */
+  .carousel-wrap{position:relative;background:#111;border-radius:16px;overflow:hidden;user-select:none}
+  .carousel-main{position:relative;height:420px;display:flex;align-items:center;justify-content:center}
+  .carousel-main img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:#fff;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;transition:background .15s;z-index:2}
+  .carousel-arrow:hover{background:rgba(255,255,255,.25)}
+  .carousel-arrow.prev{left:12px}
+  .carousel-arrow.next{right:12px}
+  .carousel-counter{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;font-size:12px;padding:3px 10px;border-radius:999px}
+  .carousel-thumbs{display:flex;gap:8px;padding:12px;background:var(--bg1);border-top:1px solid var(--bd);overflow-x:auto}
+  .carousel-thumb{width:56px;height:56px;border-radius:8px;overflow:hidden;flex-shrink:0;cursor:pointer;border:2px solid transparent;transition:all .15s;opacity:.6}
+  .carousel-thumb:hover{opacity:.9}
+  .carousel-thumb.active{border-color:var(--rose);opacity:1}
+  .carousel-thumb img{width:100%;height:100%;object-fit:cover}
+  .carousel-add{width:56px;height:56px;border-radius:8px;border:2px dashed var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:22px;flex-shrink:0;transition:all .15s}
+  .carousel-add:hover{border-color:var(--rose);color:var(--rose)}
 
   /* ── Share popover ── */
   .popover{position:absolute;right:0;top:calc(100% + 8px);width:280px;background:var(--bg);border:1px solid var(--bd);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.1);padding:16px;z-index:100}
@@ -887,14 +896,21 @@ function renderLogViewer(logId) {
       <div class="editor-footer"><span style="color:var(--text2)">0자</span><span style="color:var(--sage)">저장됨 ✓</span></div>
     </div>`;
   } else if (log.images) {
+    const thumbs = log.images.map((url,i) => `
+      <div class="carousel-thumb${i===0?' active':''}" id="thumb-${i}" onclick="carouselGo(${i})">
+        <img src="${url}" alt="">
+      </div>`).join('');
     body = `<div style="padding:20px 24px">
-      <div class="img-grid" id="img-grid-demo">${log.images.map((url,i) => `
-        <div class="img-cell" onclick="openLightbox(${i})">
-          <img src="${url}" alt="이미지 ${i+1}">
-        </div>`).join('')}
-        <div class="img-add" onclick="showToast('실제 앱에서는 파일 업로드가 됩니다')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span style="font-size:11px">이미지 추가</span>
+      <div class="carousel-wrap">
+        <div class="carousel-main" id="carousel-main">
+          <img id="carousel-img" src="${log.images[0]}" alt="이미지 1">
+          <button class="carousel-arrow prev" onclick="carouselNav(-1)">&#8249;</button>
+          <button class="carousel-arrow next" onclick="carouselNav(1)">&#8250;</button>
+          <div class="carousel-counter" id="carousel-counter">1 / ${log.images.length}</div>
+        </div>
+        <div class="carousel-thumbs">
+          ${thumbs}
+          <div class="carousel-add" onclick="showToast('실제 앱에서는 파일 업로드가 됩니다')" title="이미지 추가">+</div>
         </div>
       </div>
     </div>`;
@@ -958,8 +974,33 @@ function bindLogViewer() {
   }
 }
 
+let carouselImages = [];
+let carouselIdx = 0;
+
 function bindImageGrid() {
-  lbImages = LOGS.find(l => l.id === 'log2')?.images || [];
+  carouselImages = LOGS.find(l => l.id === 'log2')?.images || [];
+  carouselIdx = 0;
+  // keyboard nav
+  document.onkeydown = e => {
+    if (currentPage !== 'log-image') return;
+    if (e.key === 'ArrowLeft')  carouselNav(-1);
+    if (e.key === 'ArrowRight') carouselNav(1);
+  };
+}
+
+function carouselNav(dir) {
+  carouselImages = LOGS.find(l => l.id === 'log2')?.images || [];
+  carouselGo(Math.max(0, Math.min(carouselImages.length - 1, carouselIdx + dir)));
+}
+
+function carouselGo(idx) {
+  carouselImages = LOGS.find(l => l.id === 'log2')?.images || [];
+  carouselIdx = idx;
+  const img = document.getElementById('carousel-img');
+  const counter = document.getElementById('carousel-counter');
+  if (img) { img.style.opacity = '0'; setTimeout(() => { img.src = carouselImages[idx]; img.style.opacity = '1'; img.style.transition = 'opacity .2s'; }, 100); }
+  if (counter) counter.textContent = `${idx + 1} / ${carouselImages.length}`;
+  document.querySelectorAll('.carousel-thumb').forEach((t, i) => t.classList.toggle('active', i === idx));
 }
 
 // ════════════════════════════════════════════════════════════
