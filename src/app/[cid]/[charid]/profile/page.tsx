@@ -1,6 +1,5 @@
-import FreeDocPage from '@/components/FreeDocPage';
+import ProfileAnchorEditor from '@/components/ProfileAnchorEditor';
 
-// Week 4에서 앵커 에디터로 교체 예정
 export default function ProfilePage({ params }: { params: { cid: string; charid: string } }) {
-  return <FreeDocPage charid={params.charid} kind="PROFILE" />;
+  return <ProfileAnchorEditor charid={params.charid} />;
 }
