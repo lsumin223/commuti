@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg:     #FAF8F4;
+  --bg1:    #F4F0E8;
+  --bg2:    #EDE8DE;
+  --bg3:    #E4DDD0;
+  --rose:   #C4607A;
+  --rose-l: #EDD5DA;
+  --rose-xl:#FAF0F2;
+  --sage:   #7A9E8A;
+  --sage-l: #D8EAE0;
+  --text0:  #2C2520;
+  --text1:  #6B6058;
+  --text2:  #A89E94;
+  --bd:     #E4DDD0;
+  --bd2:    #D4CBBC;
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text0);
+  font-family: 'Nunito', 'Pretendard', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 999px; }
+
+/* Sidebar nav item */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-size: 13px;
+  color: var(--text1);
+  font-weight: 500;
+  user-select: none;
+}
+.nav-item:hover { background: var(--bg2); color: var(--text0); }
+.nav-item.active { background: var(--rose-xl); color: var(--rose); font-weight: 600; }
+
+/* Tiptap editor */
+.tiptap-editor .ProseMirror {
+  outline: none;
+  min-height: 200px;
+  line-height: 1.75;
+}
+.tiptap-editor .ProseMirror p { margin: 0 0 0.5em; }
+.tiptap-editor .ProseMirror h1 { font-size: 1.6em; font-weight: 700; margin: 1em 0 0.5em; }
+.tiptap-editor .ProseMirror h2 { font-size: 1.3em; font-weight: 600; margin: 0.8em 0 0.4em; }
+.tiptap-editor .ProseMirror h3 { font-size: 1.1em; font-weight: 600; margin: 0.6em 0 0.3em; }
+.tiptap-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--rose-l);
+  padding-left: 12px;
+  color: var(--text1);
+  font-style: italic;
+}
+.tiptap-editor .ProseMirror hr { border: none; border-top: 1.5px solid var(--bd); margin: 1em 0; }
+.tiptap-editor .ProseMirror ul { list-style: disc; padding-left: 20px; }
+.tiptap-editor .ProseMirror ol { list-style: decimal; padding-left: 20px; }
+.tiptap-editor .ProseMirror table { border-collapse: collapse; width: 100%; }
+.tiptap-editor .ProseMirror td,
+.tiptap-editor .ProseMirror th {
+  border: 1.5px solid var(--bd2);
+  padding: 6px 10px;
+}
+.tiptap-editor .ProseMirror th { background: var(--bg2); font-weight: 600; }
+.tiptap-editor .ProseMirror a { color: var(--rose); text-decoration: underline; }
+.tiptap-editor .ProseMirror .is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--text2);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Spoiler / 접은글 */
+details.spoiler summary { cursor: pointer; color: var(--rose); font-weight: 600; }
+details.spoiler summary::marker { color: var(--rose); }

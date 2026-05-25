@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  password   String
+  nickname   String
+  avatar     String?
+  createdAt  DateTime   @default(now())
+  categories Category[]
+}
+
+model Category {
+  id         String      @id @default(cuid())
+  name       String
+  color      String      @default("#C4607A")
+  order      Int         @default(0)
+  ownerId    String
+  owner      User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  characters Character[]
+  shareLinks ShareLink[]
+  createdAt  DateTime    @default(now())
+}
+
+model Character {
+  id         String      @id @default(cuid())
+  name       String
+  emoji      String?
+  themeColor String      @default("#C4607A")
+  headImage  String?
+  order      Int         @default(0)
+  categoryId String
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  documents  Document[]
+  logs       Log[]
+  shareLinks ShareLink[]
+  createdAt  DateTime    @default(now())
+}
+
+model Document {
+  id          String      @id @default(cuid())
+  kind        String      // PROFILE | WORLD | SECRET | CLUE | TIMELINE
+  content     String?     // Tiptap JSON (stored as string)
+  order       Int         @default(0)
+  characterId String
+  character   Character   @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  sections    Section[]
+  shareLinks  ShareLink[]
+  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
+}
+
+model Section {
+  id         String   @id @default(cuid())
+  title      String
+  content    String?  // Tiptap JSON
+  order      Int      @default(0)
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+model Log {
+  id          String     @id @default(cuid())
+  title       String
+  kind        String     // TEXT | IMAGE | COMIC
+  content     String?    // 글로그: Tiptap JSON
+  images      String?    // JSON array of URLs
+  seriesId    String?
+  series      LogSeries? @relation(fields: [seriesId], references: [id])
+  order       Int        @default(0)
+  visibility  String     @default("private") // private | link | secret
+  characterId String
+  character   Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  shareLinks  ShareLink[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model LogSeries {
+  id          String @id @default(cuid())
+  name        String
+  characterId String
+  logs        Log[]
+  createdAt   DateTime @default(now())
+}
+
+model ShareLink {
+  id          String     @id @default(cuid())
+  token       String     @unique @default(cuid())
+  password    String?
+  targetType  String     // category | character | document | log-list | log
+  expiresAt   DateTime?
+  categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  characterId String?
+  character   Character? @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  documentId  String?
+  document    Document?  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  logId       String?
+  log         Log?       @relation(fields: [logId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+}
